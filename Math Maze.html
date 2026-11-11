@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Maze</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+    --bg: #f2f6ff;
+    --card: #ffffff;
+    --text: #25304b;
+    --muted: #8992aa;
+    --primary: #5865e8;
+    --primary-light: #eef0ff;
+    --green: #20ad7a;
+    --red: #e45c6b;
+    --border: #e7eaf3;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    padding: 22px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+}
+
+.app {
+    width: 100%;
+    max-width: 650px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.logo {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 10px;
+    border-radius: 18px;
+    background: var(--primary);
+    color: white;
+    font-size: 30px;
+    box-shadow: 0 7px 18px #5865e833;
+}
+
+h1 {
+    font-size: 29px;
+    font-weight: 900;
+    letter-spacing: -.8px;
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 21px;
+    margin-bottom: 16px;
+    box-shadow: 0 12px 35px #26365c0b;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 17px;
+}
+
+.stat {
+    background: #f7f8fd;
+    border-radius: 13px;
+    padding: 11px 5px;
+    text-align: center;
+}
+
+.stat span {
+    display: block;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+}
+
+.stat strong {
+    display: block;
+    font-size: 21px;
+    font-weight: 900;
+    margin-top: 3px;
+}
+
+.progress-track {
+    height: 8px;
+    background: #eceefa;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 19px;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #5865e8, #9c8cff);
+    border-radius: 20px;
+    transition: width .3s;
+}
+
+.maze-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.maze-heading h2 {
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.level-badge {
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.maze {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    padding: 12px;
+    background: #e9eddf;
+    border-radius: 15px;
+    border: 1px solid #dce3d0;
+}
+
+.cell {
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    font-size: clamp(17px, 5vw, 27px);
+    position: relative;
+    transition: background .2s;
+}
+
+.wall {
+    background: #667b67;
+    box-shadow: inset 0 -3px 0 #526552;
+}
+
+.path {
+    background: #f9f9ed;
+    box-shadow: inset 0 0 0 1px #e7e9d9;
+}
+
+.visited {
+    background: #d9f2e5;
+}
+
+.current {
+    background: #fff1c9;
+    box-shadow: 0 0 0 2px #efbd48;
+    z-index: 1;
+}
+
+.start {
+    background: #dff5e8;
+}
+
+.goal {
+    background: #e7e4ff;
+}
+
+.turtle {
+    font-size: clamp(21px, 6vw, 32px);
+    animation: bounce .5s ease;
+    filter: drop-shadow(0 2px 2px #0002);
+}
+
+@keyframes bounce {
+    0% { transform: scale(.7) rotate(-15deg); }
+    60% { transform: scale(1.2) rotate(8deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+
+.maze-legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.legend-box {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+.question-box {
+    background: #f7f8fd;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    text-align: center;
+    margin-top: 17px;
+}
+
+.question-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.question {
+    font-size: clamp(30px, 8vw, 40px);
+    font-weight: 900;
+    margin: 8px 0 15px;
+    color: var(--primary);
+}
+
+.answers {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 9px;
+}
+
+.answer-btn {
+    padding: 12px 5px;
+    border: 2px solid var(--border);
+    background: white;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 19px;
+    font-weight: 900;
+    color: var(--text);
+    cursor: pointer;
+    transition: .15s;
+}
+
+.answer-btn:hover:not(:disabled) {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    transform: translateY(-2px);
+}
+
+.answer-btn:disabled {
+    cursor: default;
+    opacity: .75;
+}
+
+.answer-btn.correct {
+    border-color: var(--green);
+    background: #e8f8f0;
+    color: var(--green);
+}
+
+.answer-btn.wrong {
+    border-color: var(--red);
+    background: #fff0f1;
+    color: var(--red);
+}
+
+.feedback {
+    min-height: 25px;
+    margin-top: 13px;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.feedback.success {
+    color: var(--green);
+}
+
+.feedback.error {
+    color: var(--red);
+}
+
+.message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px;
+    background: #f7f8fd;
+    border-radius: 12px;
+    margin-top: 15px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #6e7891;
+}
+
+.message-icon {
+    font-size: 22px;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn {
+    border: 0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: .15s;
+}
+
+.btn:active {
+    transform: scale(.97);
+}
+
+.primary {
+    background: var(--primary);
+    color: white;
+    flex: 1;
+}
+
+.secondary {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: #17203b99;
+    backdrop-filter: blur(5px);
+}
+
+.overlay.show {
+    display: flex;
+}
+
+.modal {
+    width: 100%;
+    max-width: 390px;
+    background: white;
+    border-radius: 23px;
+    padding: 28px 23px;
+    text-align: center;
+    box-shadow: 0 20px 60px #0002;
+}
+
+.modal-icon {
+    font-size: 57px;
+    margin-bottom: 10px;
+}
+
+.modal h2 {
+    font-size: 25px;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.modal p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.final-score {
+    font-size: 48px;
+    color: var(--primary);
+    font-weight: 900;
+    margin: 15px 0;
+}
+
+.modal .btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+}
+
+footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 4px;
+}
+
+@media (max-width: 430px) {
+    .panel {
+        padding: 14px;
+    }
+
+    .maze {
+        gap: 4px;
+        padding: 8px;
+    }
+
+    .cell {
+        border-radius: 5px;
+    }
+
+    .question-box {
+        padding: 14px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+    <header>
+        <div class="logo">🐢</div>
+        <h1>Math Maze</h1>
+        <p class="subtitle">Solve the sums. Guide the turtle. Find the exit!</p>
+    </header>
+
+    <main class="panel">
+        <div class="stats">
+            <div class="stat">
+                <span>Steps</span>
+                <strong id="steps">0</strong>
+            </div>
+            <div class="stat">
+                <span>Correct</span>
+                <strong id="correctCount">0</strong>
+            </div>
+            <div class="stat">
+                <span>Level</span>
+                <strong id="level">1</strong>
+            </div>
+        </div>
+
+        <div class="progress-track">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="maze-heading">
+            <h2>🌿 Turtle's Maze</h2>
+            <span class="level-badge" id="levelBadge">LEVEL 1</span>
+        </div>
+
+        <div class="maze" id="maze"></div>
+
+        <div class="maze-legend">
+            <div class="legend-item"><span class="legend-box" style="background:#667b67"></span> Wall</div>
+            <div class="legend-item"><span class="legend-box" style="background:#f9f9ed"></span> Path</div>
+            <div class="legend-item">🐢 Turtle</div>
+            <div class="legend-item">🏁 Exit</div>
+        </div>
+
+        <div class="question-box">
+            <div class="question-label">Solve to move forward</div>
+            <div class="question" id="question">8 + 5 = ?</div>
+            <div class="answers" id="answers"></div>
+            <div class="feedback" id="feedback" aria-live="polite"></div>
+        </div>
+
+        <div class="message">
+            <span class="message-icon">💡</span>
+            <span id="tip">Choose the correct answer to move your turtle one step forward. Wrong answers won't move it!</span>
+        </div>
+
+        <div class="controls">
+            <button class="btn secondary" id="resetBtn">↻ Restart Maze</button>
+            <button class="btn primary" id="newMazeBtn">New Maze →</button>
+        </div>
+    </main>
+
+   </div>
+
+<div class="overlay" id="overlay">
+    <div class="modal">
+        <div class="modal-icon" id="modalIcon">🏆</div>
+        <h2 id="modalTitle">Maze Completed!</h2>
+        <p id="modalMessage">You guided the turtle safely to the exit.</p>
+        <div class="final-score" id="finalScore">0</div>
+        <p id="scoreLabel">Correct answers</p>
+        <button class="btn primary" id="nextLevelBtn">Next Level →</button>
+        <button class="btn secondary" id="replayBtn">Play Again ↻</button>
+    </div>
+</div>
+
+<script>
+const mazeElement = document.getElementById("maze");
+const questionElement = document.getElementById("question");
+const answersElement = document.getElementById("answers");
+const feedbackElement = document.getElementById("feedback");
+const overlay = document.getElementById("overlay");
+
+const SIZE = 7;
+
+const layouts = [
+    [
+        "S......",
+        "#####..",
+        "......#",
+        ".#####.",
+        "......#",
+        "#####..",
+        "......G"
+    ],
+    [
+        "S......",
+        ".#####.",
+        "......#",
+        "#####..",
+        "......#",
+        ".#####.",
+        "......G"
+    ],
+    [
+        "S......",
+        "#####..",
+        "......#",
+        ".#####.",
+        "......#",
+        ".#####.",
+        "......G"
+    ]
+];
+
+let level = 1;
+let position = 0;
+let correctCount = 0;
+let steps = 0;
+let currentAnswer = 0;
+let path = [];
+let currentLayout = [];
+let questionLocked = false;
+let gameFinished = false;
+let questionTimeout = null;
+
+function getPath(layout) {
+    const result = [];
+    for (let row = 0; row < SIZE; row++) {
+        for (let col = 0; col < SIZE; col++) {
+            if (layout[row][col] !== "#") {
+                result.push(row * SIZE + col);
+            }
+        }
+    }
+    return result;
+}
+
+function makeQuestion() {
+    const difficulty = Math.min(level, 5);
+    const operations = difficulty === 1 ? ["+", "-"] : ["+", "-", "×", "÷"];
+    const operation = operations[Math.floor(Math.random() * operations.length)];
+
+    let a, b;
+
+    if (operation === "+") {
+        a = random(2, 10 * difficulty);
+        b = random(2, 10 * difficulty);
+        currentAnswer = a + b;
+    } else if (operation === "-") {
+        a = random(5, 15 * difficulty);
+        b = random(1, a);
+        currentAnswer = a - b;
+    } else if (operation === "×") {
+        a = random(2, 5 + difficulty * 2);
+        b = random(2, 10);
+        currentAnswer = a * b;
+    } else {
+        b = random(2, 10);
+        currentAnswer = random(2, 10) * difficulty;
+        a = b * currentAnswer;
+    }
+
+    questionElement.textContent = `${a} ${operation} ${b} = ?`;
+
+    let options = new Set([currentAnswer]);
+
+    while (options.size < 3) {
+        let offset = random(-10, 10);
+        let wrongAnswer = currentAnswer + offset;
+        if (wrongAnswer >= 0 && wrongAnswer !== currentAnswer) {
+            options.add(wrongAnswer);
+        }
+    }
+
+    const shuffled = [...options].sort(() => Math.random() - 0.5);
+
+    answersElement.innerHTML = "";
+
+    shuffled.forEach(answer => {
+        const button = document.createElement("button");
+        button.className = "answer-btn";
+        button.textContent = answer;
+        button.addEventListener("click", () => checkAnswer(answer, button));
+        answersElement.appendChild(button);
+    });
+
+    feedbackElement.textContent = "";
+    feedbackElement.className = "feedback";
+    questionLocked = false;
+}
+
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function renderMaze() {
+    mazeElement.innerHTML = "";
+
+    for (let row = 0; row < SIZE; row++) {
+        for (let col = 0; col < SIZE; col++) {
+            const index = row * SIZE + col;
+            const cell = document.createElement("div");
+            cell.className = "cell";
+
+            const character = currentLayout[row][col];
+
+            if (character === "#") {
+                cell.classList.add("wall");
+            } else {
+                cell.classList.add("path");
+
+                if (path.slice(0, position + 1).includes(index)) {
+                    cell.classList.add("visited");
+                }
+
+                if (index === path[0]) {
+                    cell.classList.add("start");
+                }
+
+                if (index === path[path.length - 1]) {
+                    cell.classList.add("goal");
+                }
+
+                if (index === path[position]) {
+                    cell.classList.add("current");
+                    cell.innerHTML = '<span class="turtle">🐢</span>';
+                } else if (index === path[path.length - 1]) {
+                    cell.textContent = "🏁";
+                } else if (index === path[0]) {
+                    cell.textContent = "🌱";
+                }
+            }
+
+            mazeElement.appendChild(cell);
+        }
+    }
+
+    document.getElementById("steps").textContent = steps;
+    document.getElementById("correctCount").textContent = correctCount;
+    document.getElementById("level").textContent = level;
+    document.getElementById("levelBadge").textContent = `LEVEL ${level}`;
+
+    const progress = (position / (path.length - 1)) * 100;
+    document.getElementById("progressBar").style.width = `${progress}%`;
+}
+
+function checkAnswer(answer, clickedButton) {
+    if (questionLocked || gameFinished) return;
+
+    questionLocked = true;
+
+    const buttons = [...answersElement.querySelectorAll("button")];
+    buttons.forEach(button => {
+        button.disabled = true;
+        if (Number(button.textContent) === currentAnswer) {
+            button.classList.add("correct");
+        }
+    });
+
+    if (answer === currentAnswer) {
+        correctCount++;
+        steps++;
+        position++;
+
+        clickedButton.classList.add("correct");
+        feedbackElement.textContent = "✓ Correct! Your turtle moves forward!";
+        feedbackElement.className = "feedback success";
+
+        document.getElementById("tip").textContent = "Great calculation! Keep going to reach the finish line.";
+
+        renderMaze();
+
+        if (position >= path.length - 1) {
+            gameFinished = true;
+            clearTimeout(questionTimeout);
+            questionTimeout = setTimeout(showVictory, 500);
+        } else {
+            questionTimeout = setTimeout(makeQuestion, 650);
+        }
+    } else {
+        clickedButton.classList.add("wrong");
+        feedbackElement.textContent = `✗ Not quite! The correct answer is ${currentAnswer}. Try again!`;
+        feedbackElement.className = "feedback error";
+
+        document.getElementById("tip").textContent = "The turtle needs the correct answer before it can move. Take your time!";
+
+        questionTimeout = setTimeout(makeQuestion, 1100);
+    }
+}
+
+function showVictory() {
+    document.getElementById("modalIcon").textContent = "🏆";
+    document.getElementById("modalTitle").textContent = "Maze Completed!";
+    document.getElementById("modalMessage").textContent =
+        `Amazing work! You guided the turtle through Level ${level}.`;
+    document.getElementById("finalScore").textContent = correctCount;
+    document.getElementById("scoreLabel").textContent =
+        `Correct answers · ${steps} steps taken`;
+
+    document.getElementById("nextLevelBtn").style.display = "block";
+    overlay.classList.add("show");
+}
+
+function startMaze(newLevel = false) {
+    clearTimeout(questionTimeout);
+
+    if (newLevel) {
+        level++;
+    }
+
+    const layoutIndex = (level - 1) % layouts.length;
+    currentLayout = layouts[layoutIndex].map(row => row.split(""));
+    path = getPath(currentLayout);
+
+    position = 0;
+    correctCount = 0;
+    steps = 0;
+    questionLocked = false;
+    gameFinished = false;
+
+    overlay.classList.remove("show");
+
+    document.getElementById("tip").textContent =
+        "Choose the correct answer to move your turtle one step forward. Wrong answers won't move it!";
+
+    renderMaze();
+    makeQuestion();
+}
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+    startMaze(false);
+});
+
+document.getElementById("newMazeBtn").addEventListener("click", () => {
+    startMaze(true);
+});
+
+document.getElementById("nextLevelBtn").addEventListener("click", () => {
+    startMaze(true);
+});
+
+document.getElementById("replayBtn").addEventListener("click", () => {
+    startMaze(false);
+});
+
+startMaze();
+</script>
+
+</body>
+</html>
